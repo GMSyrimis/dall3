@@ -57,6 +57,37 @@
             box-sizing: border-box;
         }
 
+        .api-key-container {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .api-key-container input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .save-btn {
+            background: #10a37f;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background 0.16s;
+            white-space: nowrap;
+        }
+
+        .save-btn:hover {
+            background: #138768;
+        }
+
+        .save-btn.saved {
+            background: #059669;
+        }
+
         .sidebar .section {
             margin-bottom: 16px;
         }
@@ -254,7 +285,10 @@
         <h2>DALL·E 3 Generator</h2>
         <div class="section">
             <label for="apiKey">OpenAI API Key</label>
-            <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+            <div class="api-key-container">
+                <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+                <button id="saveBtn" class="save-btn">Save</button>
+            </div>
         </div>
         <div class="section">
             <label for="size">Image Size</label>
@@ -265,7 +299,7 @@
             </select>
         </div>
         <div class="disclaimer">
-            <b>API key is stored only in memory and sent directly to OpenAI.<br>
+            <b>API key can be saved locally in your browser and is sent directly to OpenAI.<br>
                 <span style="color:#ff8080">Never share your key.</span></b>
         </div>
     </div>
@@ -284,11 +318,36 @@
     const promptInput = document.getElementById("prompt");
     const sendBtn = document.getElementById("sendBtn");
     const chatScroll = document.getElementById("chatScroll");
+    const saveBtn = document.getElementById("saveBtn");
 
     // State
     let apiKey = '';
     let isLoading = false;
     let chatItems = [];
+
+    // LocalStorage functions
+    function saveApiKey() {
+        const key = apiKeyInput.value.trim();
+        if (key) {
+            localStorage.setItem('dalle3-api-key', key);
+            
+            // Visual feedback
+            saveBtn.textContent = 'Saved!';
+            saveBtn.classList.add('saved');
+            setTimeout(() => {
+                saveBtn.textContent = 'Save';
+                saveBtn.classList.remove('saved');
+            }, 2000);
+        }
+    }
+
+    function loadApiKey() {
+        const savedKey = localStorage.getItem('dalle3-api-key');
+        if (savedKey) {
+            apiKeyInput.value = savedKey;
+            apiKey = savedKey;
+        }
+    }
 
     // Auto scroll to bottom
     function scrollToBottom() {
@@ -473,6 +532,12 @@
             sendBtn.disabled = false;
         }
     });
+
+    // Save API key on button click
+    saveBtn.addEventListener("click", saveApiKey);
+
+    // Load API key on page load
+    loadApiKey();
 
     // Initial render
     renderChat();
